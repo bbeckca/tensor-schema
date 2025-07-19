@@ -37,6 +37,13 @@ class Phi3VImagePixelInputs(TensorSchema):
     type: Literal["pixel_values"] = "pixel_values"
     data: Annotated[Union[torch.Tensor, List[torch.Tensor]], TensorShape("bn", "p", 3, "h", "w")]
     image_sizes: Annotated[Union[torch.Tensor, List[torch.Tensor]], TensorShape("bn", 2)]
+
+inputs = Phi3VImagePixelInputs(
+    data=torch.randn(16, 64, 3, 32, 32),
+    image_sizes=torch.randint(0, 256, (16, 2))
+)
+inputs.validate()  # will raise ValueError if shape is invalid
+
 ```
 
 ## ✨ Key Features
@@ -65,3 +72,18 @@ class Phi3VImagePixelInputs(TensorSchema):
 
 This solution can benefit projects outside of vLLM as well, so we should consider developing this as a separate package for broader adoption.
 
+## ✅ Test Coverage
+
+The schema has been validated against a range of pass/fail cases:
+
+- ✅ Single tensor input
+- ✅ List of tensors
+- ✅ Tuple of tensors
+- ✅ Optional field skipping
+- ✅ Symbolic dim reuse across fields
+- ❌ Mismatched symbolic dims (e.g. `"bn"=12` vs `"bn"=16`)
+- ❌ Constant dim mismatches (e.g. `expected 3, got 4`)
+- ❌ Inconsistent shapes within lists
+- ❌ Missing fields and empty lists
+
+See `test_log.txt` for detailed output.

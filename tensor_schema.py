@@ -55,7 +55,7 @@ class TensorSchema:
                             actual_shape = value.shape
 
                         else:
-                            raise ValueError(f"{field_name} is neither a Tensor nor a List[Tensor]")
+                            raise ValueError(f"{field_name} is neither a Tensor, List[Tensor] or Tuple[Tensor]")
                             
                         if len(actual_shape) != len(expected_shape):
                             raise ValueError(f"{field_name} has rank {len(actual_shape)} but expected {len(expected_shape)}")
