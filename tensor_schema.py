@@ -21,7 +21,7 @@ class TensorSchema:
                     if isinstance(arg, TensorShape):
                         expected_shape = arg.dims
                         value = getattr(self, field_name)
-                        if isinstance(value, list):
+                        if isinstance(value, list) or isinstance(value, tuple):
                             if not value:
                                 raise ValueError(f"{field_name} is an empty list")
 
