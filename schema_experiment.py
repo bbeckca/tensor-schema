@@ -8,15 +8,20 @@ class Phi3VImagePixelInputs(TensorSchema):
 
 
 if __name__ == "__main__":
+    # Test single tensor
     inputs = Phi3VImagePixelInputs(
         image_sizes=randint(0, 256, (16, 2))
     )
     
-    # Simple debug - just print the shapes
     inputs.print_shapes()
 
     inputs.validate()
-    
-    # Test TensorShape printing
-    # shape = TensorShape("bn", "p", 3, "h", "w")
-    # print(f"\nTest shape: {shape}")
+
+    # Test list of tensors
+    inputs = Phi3VImagePixelInputs(
+        image_sizes=[randint(0, 256, (2,)) for _ in range(16)]
+    )
+
+    inputs.print_shapes()
+
+    inputs.validate()

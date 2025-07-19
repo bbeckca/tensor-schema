@@ -1,4 +1,5 @@
 import inspect
+import torch
 from typing import get_type_hints, get_args, get_origin
 from tensor_shape import TensorShape
 
@@ -20,10 +21,30 @@ class TensorSchema:
                     if isinstance(arg, TensorShape):
                         expected_shape = arg.dims
                         value = getattr(self, field_name)
-                        actual_shape = value.shape
+                        if isinstance(value, list):
+                            if not value:
+                                raise ValueError(f"{field_name} is an empty list")
 
-                        # TODO: handle list/tuple case
+                            # Ensure all tensors in the list have the same shape
+                            first = value[0]
+                            for i, v in enumerate(value):
+                                if not isinstance(v, torch.Tensor):
+                                    raise ValueError(f"{field_name}[{i}] is not a torch.Tensor")
+                                if v.shape != first.shape:
+                                    raise ValueError(
+                                        f"{field_name} contains inconsistent shapes: "
+                                        f"{first.shape} vs {v.shape} at index {i}"
+                                    )
 
+                            # Treat the list as a stacked tensor: shape = (len(list), *tensor.shape)
+                            actual_shape = (len(value),) + first.shape
+
+                        elif isinstance(value, torch.Tensor):
+                            actual_shape = value.shape
+
+                        else:
+                            raise ValueError(f"{field_name} is neither a Tensor nor a List[Tensor]")
+                            
                         if len(actual_shape) != len(expected_shape):
                             raise ValueError(f"{field_name} has rank {len(actual_shape)} but expected {len(expected_shape)}")
 
