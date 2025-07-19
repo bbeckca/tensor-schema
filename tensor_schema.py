@@ -1,7 +1,15 @@
 import inspect
 import torch
 from typing import get_type_hints, get_args, get_origin, Optional, Union
-from tensor_shape import TensorShape
+
+
+class TensorShape:
+    def __init__(self, *dims):
+        self.dims = dims
+    
+    def __repr__(self):
+        return f"TensorShape{self.dims}"
+
 
 class TensorSchema:
     def __init__(self, **kwargs):

@@ -1,7 +1,6 @@
 from typing import TypedDict, Literal, Union, Annotated, Optional, List
 from torch import Tensor, randint, randn
-from tensor_schema import TensorSchema
-from tensor_shape import TensorShape
+from tensor_schema import TensorSchema, TensorShape
 
 class Phi3VImagePixelInputs(TensorSchema):
     """
