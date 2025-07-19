@@ -1,6 +1,6 @@
 import inspect
 import torch
-from typing import get_type_hints, get_args, get_origin
+from typing import get_type_hints, get_args, get_origin, Optional, Union
 from tensor_shape import TensorShape
 
 class TensorSchema:
@@ -14,13 +14,25 @@ class TensorSchema:
         shape_env = {}  # optional, used later for symbolic matching
 
         for field_name, field_type in type_hints.items():
+            # Check if the field was provided
+            if not hasattr(self, field_name):
+                # Field is missing - check if it's optional
+                if get_origin(field_type) is Union:
+                    args = get_args(field_type)
+                    if type(None) in args:  # Optional field
+                        continue  # Skip validation for missing optional fields
+                # If not optional, raise error
+                raise ValueError(f"Required field '{field_name}' is missing")
+            
+            # Field exists, proceed with validation
+            value = getattr(self, field_name)
+
             if get_origin(field_type) is not None:
                 args = get_args(field_type)
 
                 for arg in args:
                     if isinstance(arg, TensorShape):
                         expected_shape = arg.dims
-                        value = getattr(self, field_name)
                         if isinstance(value, list) or isinstance(value, tuple):
                             if not value:
                                 raise ValueError(f"{field_name} is an empty list")
@@ -54,7 +66,16 @@ class TensorSchema:
                                     raise ValueError(
                                         f"{field_name} dim[{i}] expected {dim}, got {actual_shape[i]}"
                                     )
-                            # TODO: Symbolic dim binding will be handled later
+                            elif isinstance(dim, str):
+                                if dim in shape_env:
+                                    if actual_shape[i] != shape_env[dim]:
+                                        raise ValueError(
+                                            f"{field_name} dim[{i}] expected '{dim}'={shape_env[dim]}, got {actual_shape[i]}"
+                                        )
+                                else:
+                                    shape_env[dim] = actual_shape[i]
+                            else:
+                                raise TypeError(f"{field_name} dim[{i}] has unsupported type: {type(dim)}")
         
         print("Validation passed")
 
