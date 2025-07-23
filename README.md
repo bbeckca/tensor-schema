@@ -79,11 +79,14 @@ The schema has been validated against a range of pass/fail cases:
 - ✅ Single tensor input
 - ✅ List of tensors
 - ✅ Tuple of tensors
-- ✅ Optional field skipping
 - ✅ Symbolic dim reuse across fields
+- ✅ Runtime shape substitution via resolve_bindings={"h": ..., "w": ...}
+- ✅ Variable-length dimensions via dynamic_dims (e.g. differing p values per image)
+- ✅ Optional fields: supports both None and omission (e.g. Union[torch.Tensor, None])
+- ✅ Optional validation toggle with validate=False
 - ❌ Mismatched symbolic dims (e.g. `"bn"=12` vs `"bn"=16`)
 - ❌ Constant dim mismatches (e.g. `expected 3, got 4`)
-- ❌ Inconsistent shapes within lists
+- ❌ Inconsistent shapes within a batch
 - ❌ Missing fields and empty lists
 
 See `test_log.txt` for detailed output.
@@ -105,3 +108,8 @@ pytest test_tensor_schema.py
 This will execute all the tests and display the results in your terminal.
 
 ---
+
+
+
+
+See `test_log.txt` for detailed output.
