@@ -87,3 +87,21 @@ The schema has been validated against a range of pass/fail cases:
 - ❌ Missing fields and empty lists
 
 See `test_log.txt` for detailed output.
+
+# Running Tests
+
+To run the tests for this project, make sure you have `pytest` installed. You can install it with:
+
+```bash
+pip install pytest
+```
+
+Then, to run the test suite (for example, `test_tensor_schema2.py`), use the following command:
+
+```bash
+pytest test_tensor_schema.py
+```
+
+This will execute all the tests and display the results in your terminal.
+
+---
