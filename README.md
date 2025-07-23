@@ -1,38 +1,44 @@
-# Tensor Schema Prototype
+# Tensor Schema
 
-A schema system for validating input shapes in multi-modal models.
+Validate PyTorch tensor shapes using Python type annotations — fast, runtime-safe, and production-ready.
 
-## 🚀 Overview
+## Overview
 
-Currently, multi-modal inputs are validated using `_parse_and_validate_*_input` functions, but these only perform minimal checks. Some models only validate input types, making it easy for actual tensor shapes to mismatch documented expectations in classes like `*ImagePixelInputs`. This confuses model developers and maintainers.
+Tensor Schema enables robust, automatic validation of PyTorch tensor shapes using Python type annotations. Designed for multimodal and ML pipelines, it helps teams catch shape mismatches early, standardize input contracts, and streamline debugging.
 
-## 💡 Solution
+**Key benefits:**
+- Enforce input shape contracts at runtime
+- Debug shape errors before model execution
+- Standardize multimodal/model input types
+- Integrate seamlessly with type annotations
 
-I propose adding a base class `TensorSchema` to validate model inputs with automatic shape checking.
+## Installation
 
-### Current Approach
+```bash
+pip install tensor-schema
+```
 
+## Example: TypedDict vs. TensorSchema
+
+**Without validation:**
 ```python
 class Phi3VImagePixelInputs(TypedDict):
     type: Literal["pixel_values"]
-    data: Union[torch.Tensor, List[torch.Tensor]]
-    """Shape: `(batch_size * num_images, 1 + num_patches, num_channels, height, width)`"""
-
-    image_sizes: torch.Tensor
-    """Shape: `(batch_size * num_images, 2)`"""
+    data: Union[torch.Tensor, List[torch.Tensor]]  # (batch_size * num_images, 1 + num_patches, num_channels, height, width)
+    image_sizes: torch.Tensor  # (batch_size * num_images, 2)
 ```
 
-### Proposed Solution
-
+**With TensorSchema:**
 ```python
+from typing_extensions import Annotated  # Use this import for Python <3.9
+
 class Phi3VImagePixelInputs(TensorSchema):
     """
-    Dimensions:
-        - b: Batch size (number of prompts)
-        - n: Number of images
-        - p: Number of patches
-        - h: Height of each patch
-        - w: Width of each patch
+    b: batch size
+    n: number of images
+    p: number of patches
+    h: patch height
+    w: patch width
     """
     type: Literal["pixel_values"] = "pixel_values"
     data: Annotated[Union[torch.Tensor, List[torch.Tensor]], TensorShape("bn", "p", 3, "h", "w")]
@@ -42,74 +48,68 @@ inputs = Phi3VImagePixelInputs(
     data=torch.randn(16, 64, 3, 32, 32),
     image_sizes=torch.randint(0, 256, (16, 2))
 )
-inputs.validate()  # will raise ValueError if shape is invalid
-
+inputs.validate()  # Raises ValueError if shape is invalid
 ```
 
-## ✨ Key Features
+## How It Works
 
-- **Automatic Validation**: Similar to Pydantic models, validation happens automatically
-- **Performance Control**: Ability to disable validation using a flag to avoid performance issues
-- **Type Annotations**: Uses `typing_extensions.Annotated` with additional metadata for validation
-- **Future-Proof**: Can switch to `typing.Annotated` once Python 3.9 support is dropped
+- **Annotation-driven**: Specify expected shapes with `Annotated` and `TensorShape`.
+- **Symbolic & constant dims**: Enforce both named and fixed dimensions across fields.
+- **List/tuple support**: Validate leading dimension with `len()`, recurse on elements.
+- **Optional fields**: Handle `None` and omitted fields.
+- **Performance toggle**: Enable/disable validation as needed.
+- **Clear errors**: Immediate, actionable feedback on mismatches.
 
-## 🔧 How It Works
+## Use Cases
 
-### Dimension Validation
+- Model input validation in ML pipelines
+- Data loader and preprocessing checks
+- Debugging and test assertions
+- Enforcing input contracts in shared libraries
+- Standardizing APIs for multimodal models
 
-- **Constant Dimensions**: Direct checking of constant values
-  - Example: Validates that `data.shape[2] == 3`
-- **Named Dimensions**: Consistent validation across fields
-  - Example: Since `data.shape[0]` and `image_sizes.shape[0]` share the name `bn`, validates that `data.shape[0] == image_sizes[0]`
+## Integration & Extensibility
 
-### List/Tuple Support
+- Drop-in for any PyTorch-based ML or data pipeline
+- Easily integrates into multimodal and preprocessing workflows
+- Designed for future backend extensions (e.g., NumPy, JAX, MLX — currently only PyTorch is supported)
 
-- For list/tuple fields instead of tensors:
-  - Uses `len()` to check the leading dimension
-  - Recursively validates each element for remaining dimensions
+## Validated Scenarios
 
-## 📦 Package Considerations
+- Single tensor and list/tuple inputs
+- Symbolic and constant dimension checks
+- Runtime shape substitution
+- Variable-length and dynamic dimensions
+- Optional fields and omission
+- Validation toggle
+- Mismatch and error cases
 
-This solution can benefit projects outside of vLLM as well, so we should consider developing this as a separate package for broader adoption.
+See `test_log.txt` for details.
 
-## ✅ Test Coverage
+## Running Tests
 
-The schema has been validated against a range of pass/fail cases:
-
-- ✅ Single tensor input
-- ✅ List of tensors
-- ✅ Tuple of tensors
-- ✅ Symbolic dim reuse across fields
-- ✅ Runtime shape substitution via resolve_bindings={"h": ..., "w": ...}
-- ✅ Variable-length dimensions via dynamic_dims (e.g. differing p values per image)
-- ✅ Optional fields: supports both None and omission (e.g. Union[torch.Tensor, None])
-- ✅ Optional validation toggle with validate=False
-- ❌ Mismatched symbolic dims (e.g. `"bn"=12` vs `"bn"=16`)
-- ❌ Constant dim mismatches (e.g. `expected 3, got 4`)
-- ❌ Inconsistent shapes within a batch
-- ❌ Missing fields and empty lists
-
-See `test_log.txt` for detailed output.
-
-# Running Tests
-
-To run the tests for this project, make sure you have `pytest` installed. You can install it with:
+To run tests, first set up a virtual environment and install the package in editable mode:
 
 ```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -e .
 pip install pytest
+pytest tests/
 ```
 
-Then, to run the test suite (for example, `test_tensor_schema2.py`), use the following command:
-
+To confirm your installation, you can also run:
 ```bash
-pytest test_tensor_schema.py
+python -c "from tensor_schema import TensorSchema; print('TensorSchema import successful')"
 ```
 
-This will execute all the tests and display the results in your terminal.
+**Note:**
+- Using a virtual environment avoids permission issues and ensures dependencies are isolated.
+- Avoid using the system Python for development. Prefer a venv, conda, or Homebrew/pyenv Python.
 
 ---
 
-
-
-
-See `test_log.txt` for detailed output.
+**Roadmap:**
+- PyPI releases and versioning
+- Deeper integration with ML libraries
+- Broader backend/tensor support (NumPy, JAX, MLX)
