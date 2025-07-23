@@ -1,17 +1,22 @@
-Testing Phi3VImagePixelInputs schema validation...
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.1, pluggy-1.6.0 -- /Library/Developer/CommandLineTools/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/benjibeck/Projects/tensor-schema-prototype
+configfile: pyproject.toml
+plugins: anyio-4.9.0
+collecting ... collected 12 items
 
-1. Single tensor:
-✅ Passed
-2. List of tensors:
-✅ Passed
-3. Tuple of tensors:
-✅ Passed
-4. Symbolic dimension matching:
-✅ Passed
+tests/test_tensor_schema.py::test_tensor_schema_valid_tensor PASSED      [  8%]
+tests/test_tensor_schema.py::test_tensor_schema_optional_fields PASSED   [ 16%]
+tests/test_tensor_schema.py::test_tensor_schema_constant_dim_failure PASSED [ 25%]
+tests/test_tensor_schema.py::test_tensor_schema_symbolic_dim_mismatch PASSED [ 33%]
+tests/test_tensor_schema.py::test_tensor_schema_list_tensor_valid PASSED [ 41%]
+tests/test_tensor_schema.py::test_tensor_schema_variable_patch_counts_valid PASSED [ 50%]
+tests/test_tensor_schema.py::test_tensor_schema_tuple_tensor_valid PASSED [ 58%]
+tests/test_tensor_schema.py::test_tensor_schema_inconsistent_shapes_in_list PASSED [ 66%]
+tests/test_tensor_schema.py::test_tensor_schema_empty_list PASSED        [ 75%]
+tests/test_tensor_schema.py::test_tensor_schema_validation_disabled_skips_shape_check PASSED [ 83%]
+tests/test_tensor_schema.py::test_tensor_schema_with_valid_resolve_binding_dims PASSED [ 91%]
+tests/test_tensor_schema.py::test_tensor_schema_with_invalid_resolve_binding_dims PASSED [100%]
 
-Error cases:
-5. Mismatched batch sizes:
-> /Users/benjibeck/Projects/tensor-schema-prototype/tensor_schema.py(127)_validate_tensor_shape_expected()
--> raise ValueError(f"{field_name} dim[{i}] expected "
-(Pdb) --KeyboardInterrupt--
-(Pdb) 
+============================== 12 passed in 3.15s ==============================
