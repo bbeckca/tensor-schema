@@ -15,8 +15,10 @@ Tensor Schema enables robust, automatic validation of PyTorch tensor shapes usin
 ## Installation
 
 ```bash
-pip install tensor-schema
+pip3 install tensor-schema
 ```
+
+The package is now available on PyPI and can be installed directly.
 
 ## Example: TypedDict vs. TensorSchema
 

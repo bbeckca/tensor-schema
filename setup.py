@@ -5,7 +5,7 @@ setup(
     version="0.1.0",
     description="A lightweight shape validation system for multimodal tensors",
     author="Benji Beck",
-    author_email="",  # optional, change/remove if needed
+    author_email="",
     url="https://github.com/bbeckca/tensor-schema",
     packages=find_packages(),
     python_requires=">=3.8",
@@ -15,7 +15,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-        "torch>=1.13",  # or your lowest supported version
+        "torch>=1.13",
         "typing_extensions>=4.5.0",  # for Annotated on older Python versions
     ],
 )
